@@ -1,0 +1,53 @@
+{
+  "title": "My Custom Test",
+  "description": "A custom test with your own questions",
+  "version": "1.0",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "What is the capital of your country?",
+      "type": "multiple_choice",
+      "options": [
+        "Option A",
+        "Option B", 
+        "Option C",
+        "Option D"
+      ],
+      "correct_answer": "Option A",
+      "explanation": "This is the correct answer because...",
+      "points": 1,
+      "category": "Geography"
+    },
+    {
+      "id": "q2",
+      "question": "This statement is true.",
+      "type": "true_false",
+      "correct_answer": "True",
+      "explanation": "This statement is indeed true.",
+      "points": 2,
+      "category": "General Knowledge"
+    },
+    {
+      "id": "q3",
+      "question": "The missing word is _____.",
+      "type": "fill_blank",
+      "correct_answer": "example",
+      "explanation": "The correct answer is 'example'.",
+      "points": 1,
+      "category": "Language"
+    },
+    {
+      "id": "q4",
+      "question": "Explain the concept of gravity.",
+      "type": "short_answer",
+      "correct_answer": "gravity",
+      "explanation": "Gravity is the force that attracts objects toward each other.",
+      "points": 3,
+      "category": "Science"
+    }
+  ]
+}
+
+
+
+

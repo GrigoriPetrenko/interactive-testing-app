@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Load Questions - Interactive Testing Application{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-upload me-2"></i>
+                    Load Questions from File
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="file" class="form-label">
+                            <i class="fas fa-file-upload me-2"></i>
+                            Select JSON Questions File
+                        </label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".json" required>
+                        <div class="form-text">
+                            Please select a JSON file containing your test questions.
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-upload me-2"></i>
+                            Load Questions
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    File Format Requirements
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Your JSON file should follow this structure:</p>
+                <pre class="bg-light p-3 rounded"><code>{
+  "title": "Your Test Title",
+  "description": "Test description",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "What is the capital of France?",
+      "type": "multiple_choice",
+      "options": ["London", "Berlin", "Paris", "Madrid"],
+      "correct_answer": "Paris",
+      "explanation": "Paris has been the capital since the 12th century.",
+      "points": 1,
+      "category": "Geography"
+    }
+  ]
+}</code></pre>
+
+                <h6 class="mt-3">Question Types Supported:</h6>
+                <ul class="list-unstyled">
+                    <li><strong>multiple_choice:</strong> Requires 'options' array</li>
+                    <li><strong>true_false:</strong> Accepts True/False answers</li>
+                    <li><strong>fill_blank:</strong> Fill in missing words</li>
+                    <li><strong>short_answer:</strong> Open-ended text answers</li>
+                </ul>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> You can download our 
+                    <a href="{{ url_for('static', filename='sample_questions.json') }}" download>
+                        sample questions file
+                    </a> 
+                    to see the complete format.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

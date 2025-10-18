@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Test Complete - Interactive Testing Application{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Results Summary -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-success text-white text-center">
+                <h3 class="mb-0">
+                    <i class="fas fa-trophy me-2"></i>
+                    Test Completed!
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row g-4 text-center">
+                    <div class="col-md-3">
+                        <div class="result-stat">
+                            <div class="display-4 fw-bold text-primary">{{ total_points }}</div>
+                            <div class="text-muted">Points Earned</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="result-stat">
+                            <div class="display-4 fw-bold text-success">{{ max_points }}</div>
+                            <div class="text-muted">Total Points</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="result-stat">
+                            <div class="display-4 fw-bold 
+                                {% if percentage >= 80 %}text-success
+                                {% elif percentage >= 60 %}text-warning
+                                {% else %}text-danger{% endif %}">
+                                {{ percentage|round(1) }}%
+                            </div>
+                            <div class="text-muted">Score</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="result-stat">
+                            <div class="display-4 fw-bold text-info">{{ duration }}</div>
+                            <div class="text-muted">Duration</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Message -->
+                <div class="mt-4 text-center">
+                    {% if percentage >= 90 %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-star me-2"></i>
+                            <strong>Excellent!</strong> Outstanding performance!
+                        </div>
+                    {% elif percentage >= 80 %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-thumbs-up me-2"></i>
+                            <strong>Great job!</strong> Well done!
+                        </div>
+                    {% elif percentage >= 70 %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-check me-2"></i>
+                            <strong>Good work!</strong> Keep it up!
+                        </div>
+                    {% elif percentage >= 60 %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Passing grade.</strong> Consider reviewing the material.
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Needs improvement.</strong> Please review the material and try again.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    <button class="btn btn-primary" onclick="toggleDetailedResults()">
+                        <i class="fas fa-list me-2"></i>View Detailed Results
+                    </button>
+                    <button class="btn btn-success" onclick="exportResults()">
+                        <i class="fas fa-download me-2"></i>Export Results
+                    </button>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-home me-2"></i>Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Results (Initially Hidden) -->
+        <div class="card shadow" id="detailedResults" style="display: none;">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list-alt me-2"></i>
+                    Detailed Results
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="resultsAccordion">
+                    {% for result in results %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ loop.index }}">
+                            <button class="accordion-button {% if not result.is_correct %}collapsed{% endif %}" 
+                                    type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse{{ loop.index }}" 
+                                    aria-expanded="{% if result.is_correct %}true{% else %}false{% endif %}">
+                                <div class="d-flex align-items-center w-100">
+                                    <div class="me-3">
+                                        {% if result.is_correct %}
+                                            <i class="fas fa-check-circle text-success fa-lg"></i>
+                                        {% else %}
+                                            <i class="fas fa-times-circle text-danger fa-lg"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <strong>Question {{ loop.index }}:</strong>
+                                        {{ result.question[:60] }}{% if result.question|length > 60 %}...{% endif %}
+                                    </div>
+                                    <div class="ms-3">
+                                        <span class="badge bg-{% if result.is_correct %}success{% else %}danger{% endif %}">
+                                            {{ result.points_earned }}/{{ result.max_points }} pts
+                                        </span>
+                                    </div>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapse{{ loop.index }}" 
+                             class="accordion-collapse collapse {% if result.is_correct %}show{% endif %}" 
+                             data-bs-parent="#resultsAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-user me-2"></i>Your Answer:</h6>
+                                        <p class="answer-text {% if result.is_correct %}text-success{% else %}text-danger{% endif %}">
+                                            {{ result.user_answer or 'No answer provided' }}
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-check me-2"></i>Correct Answer:</h6>
+                                        <p class="answer-text text-success">
+                                            {{ result.correct_answer }}
+                                        </p>
+                                    </div>
+                                </div>
+                                {% if result.explanation %}
+                                <div class="mt-3">
+                                    <h6><i class="fas fa-lightbulb me-2"></i>Explanation:</h6>
+                                    <p class="explanation-text">{{ result.explanation }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Test Statistics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Question Performance</h6>
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar bg-success" style="width: {{ (results|selectattr('is_correct')|list|length / results|length * 100) }}%">
+                                Correct: {{ results|selectattr('is_correct')|list|length }}
+                            </div>
+                            <div class="progress-bar bg-danger" style="width: {{ (results|rejectattr('is_correct')|list|length / results|length * 100) }}%">
+                                Incorrect: {{ results|rejectattr('is_correct')|list|length }}
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            {{ results|selectattr('is_correct')|list|length }} of {{ results|length }} questions answered correctly
+                        </small>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Points Breakdown</h6>
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar bg-primary" style="width: {{ (total_points / max_points * 100) }}%">
+                                Earned: {{ total_points }}
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            {{ total_points }} of {{ max_points }} total points earned
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleDetailedResults() {
+    const detailedResults = document.getElementById('detailedResults');
+    const button = event.target;
+    
+    if (detailedResults.style.display === 'none') {
+        detailedResults.style.display = 'block';
+        button.innerHTML = '<i class="fas fa-eye-slash me-2"></i>Hide Detailed Results';
+        detailedResults.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        detailedResults.style.display = 'none';
+        button.innerHTML = '<i class="fas fa-list me-2"></i>View Detailed Results';
+    }
+}
+
+function exportResults() {
+    fetch('{{ url_for("export_results") }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                alert('Results exported successfully to ' + data.filename);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error exporting results');
+        });
+}
+
+// Auto-scroll to results if there are many incorrect answers
+document.addEventListener('DOMContentLoaded', function() {
+    const incorrectCount = {{ results|rejectattr('is_correct')|list|length }};
+    if (incorrectCount > 0) {
+        const alertElement = document.querySelector('.alert');
+        if (alertElement && alertElement.classList.contains('alert-danger')) {
+            alertElement.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+});
+</script>
+{% endblock %}
+

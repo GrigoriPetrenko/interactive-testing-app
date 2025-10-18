@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Interactive Testing Application</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .question-card { transition: transform 0.2s ease-in-out; }
+        .question-card:hover { transform: translateY(-2px); }
+        .progress-bar { transition: width 0.6s ease-in-out; }
+        .answer-feedback { min-height: 50px; }
+        .feature-icon { width: 60px; height: 60px; }
+        .result-stat { padding: 20px; border-radius: 10px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-graduation-cap me-2"></i>
+                Simple Testing App
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Welcome Section -->
+        <div id="welcome-section" class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold text-primary mb-4">
+                    <i class="fas fa-graduation-cap me-3"></i>
+                    Simple Interactive Testing
+                </h1>
+                <p class="lead text-muted mb-5">
+                    A standalone web-based testing application with sample questions
+                </p>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center">
+                            <div class="card-body">
+                                <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-list-ul fa-2x"></i>
+                                </div>
+                                <h5>Multiple Choice</h5>
+                                <p class="text-muted">Select from multiple options</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center">
+                            <div class="card-body">
+                                <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-toggle-on fa-2x"></i>
+                                </div>
+                                <h5>True/False</h5>
+                                <p class="text-muted">Simple binary questions</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center">
+                            <div class="card-body">
+                                <div class="feature-icon bg-warning text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-edit fa-2x"></i>
+                                </div>
+                                <h5>Fill in the Blank</h5>
+                                <p class="text-muted">Complete missing words</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Upload Section -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-upload me-2"></i>
+                            Load Your Own Questions (Optional)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="question-file" class="form-label">
+                                <i class="fas fa-file-upload me-2"></i>
+                                Upload JSON Questions File
+                            </label>
+                            <input type="file" class="form-control" id="question-file" accept=".json" 
+                                   onchange="loadCustomQuestions(this)">
+                            <div class="form-text">
+                                Upload a JSON file with your own questions. If no file is uploaded, the sample questions will be used.
+                                <br>
+                                <a href="question_template.json" download class="text-decoration-none">
+                                    <i class="fas fa-download me-1"></i>Download template file
+                                </a>
+                            </div>
+                        </div>
+                        <div id="file-info" class="alert alert-info" style="display: none;">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <span id="file-info-text"></span>
+                            <div id="question-preview" class="mt-2" style="display: none;">
+                                <button class="btn btn-sm btn-outline-primary" onclick="toggleQuestionPreview()">
+                                    <i class="fas fa-eye me-1"></i>Preview Questions
+                                </button>
+                                <div id="preview-content" class="mt-2" style="display: none;">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Question</th>
+                                                    <th>Type</th>
+                                                    <th>Category</th>
+                                                    <th>Points</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="preview-table-body">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Configuration -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>
+                            Test Configuration
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="question-count" class="form-label">
+                                    <i class="fas fa-hashtag me-2"></i>Number of Questions
+                                </label>
+                                <select class="form-select" id="question-count">
+                                    <option value="5">5 Questions (Quick Test)</option>
+                                    <option value="10">10 Questions</option>
+                                    <option value="15">15 Questions</option>
+                                    <option value="20">20 Questions</option>
+                                    <option value="30">30 Questions</option>
+                                    <option value="40">40 Questions</option>
+                                    <option value="50">50 Questions</option>
+                                    <option value="all" selected>All Available Questions</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="question-order" class="form-label">
+                                    <i class="fas fa-random me-2"></i>Question Order
+                                </label>
+                                <select class="form-select" id="question-order">
+                                    <option value="sequential">Sequential Order</option>
+                                    <option value="random" selected>Random Order</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-6">
+                                <label for="category-filter" class="form-label">
+                                    <i class="fas fa-tags me-2"></i>Category Filter (Optional)
+                                </label>
+                                <select class="form-select" id="category-filter">
+                                    <option value="all" selected>All Categories</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="difficulty-filter" class="form-label">
+                                    <i class="fas fa-star me-2"></i>Point Range
+                                </label>
+                                <select class="form-select" id="difficulty-filter">
+                                    <option value="all" selected>All Point Values</option>
+                                    <option value="1">1 Point Questions Only</option>
+                                    <option value="2">2 Point Questions Only</option>
+                                    <option value="3">3 Point Questions Only</option>
+                                    <option value="4">4 Point Questions Only</option>
+                                    <option value="5">5 Point Questions Only</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="alert alert-light">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Tip:</strong> Your JSON file should follow this format:
+                                <pre class="mt-2 mb-0"><code>{
+  "questions": [
+    {
+      "question": "Your question here?",
+      "type": "multiple_choice",
+      "options": ["A", "B", "C", "D"],
+      "correct_answer": "A",
+      "explanation": "Explanation here",
+      "points": 1,
+      "category": "Your Category"
+    }
+  ]
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-lg" onclick="startTest()">
+                    <i class="fas fa-play me-2"></i>
+                    Start Test
+                </button>
+            </div>
+        </div>
+
+        <!-- Test Section (Initially Hidden) -->
+        <div id="test-section" style="display: none;">
+            <!-- Progress Bar -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0">Question <span id="current-question">1</span> of <span id="total-questions">5</span></h5>
+                        <span class="badge bg-primary" id="progress-percentage">20% Complete</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-primary" id="progress-bar" role="progressbar" style="width: 20%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="card question-card shadow">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-question-circle me-2"></i>
+                            Question <span id="question-number">1</span>
+                        </h4>
+                        <div>
+                            <span class="badge bg-light text-dark me-2" id="question-category">General</span>
+                            <span class="badge bg-warning text-dark" id="question-points">1 points</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="question-text mb-4" id="question-text">Loading question...</h5>
+                    
+                    <div id="question-options">
+                        <!-- Options will be populated by JavaScript -->
+                    </div>
+
+                    <div class="answer-feedback" id="answer-feedback">
+                        <!-- Feedback will be shown here -->
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary" onclick="skipQuestion()">
+                            <i class="fas fa-forward me-2"></i>Skip
+                        </button>
+                        <button type="button" class="btn btn-primary btn-lg" onclick="submitAnswer()" id="submit-btn" disabled>
+                            <i class="fas fa-arrow-right me-2"></i>Submit Answer
+                        </button>
+                    </div>
+                    
+                    <!-- End Test Button -->
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmEndTest()">
+                            <i class="fas fa-stop me-2"></i>End Test Early
+                        </button>
+                    </div>
+                    
+                    <!-- Help Section -->
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-keyboard me-1"></i>
+                            <strong>Shortcuts:</strong> 
+                            <kbd>Enter</kbd> Submit • 
+                            <kbd>Esc</kbd> Exit • 
+                            <kbd>Ctrl+E</kbd> End Early
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exit Confirmation Modal -->
+        <div class="modal fade" id="exitModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exitModalTitle">Exit Test</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="exitModalBody">
+                        Are you sure you want to exit the test? Your progress will be lost.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="exitModalButton" onclick="exitTest()">Exit Test</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- End Test Confirmation Modal -->
+        <div class="modal fade" id="endTestModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-stop me-2"></i>End Test Early
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Warning:</strong> You are about to end the test early!
+                        </div>
+                        <p>You have answered <span id="answered-count">0</span> out of <span id="total-count">0</span> questions.</p>
+                        <p>Any unanswered questions will be marked as skipped and you will receive 0 points for them.</p>
+                        <p><strong>Are you sure you want to end the test now?</strong></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Test</button>
+                        <button type="button" class="btn btn-danger" onclick="endTestEarly()">
+                            <i class="fas fa-stop me-2"></i>End Test Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section (Initially Hidden) -->
+        <div id="results-section" style="display: none;">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white text-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-trophy me-2"></i>
+                        Test Completed!
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4 text-center mb-4">
+                        <div class="col-md-3">
+                            <div class="result-stat">
+                                <div class="display-4 fw-bold text-primary" id="final-score">0</div>
+                                <div class="text-muted">Points Earned</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="result-stat">
+                                <div class="display-4 fw-bold text-success" id="max-score">5</div>
+                                <div class="text-muted">Total Points</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="result-stat">
+                                <div class="display-4 fw-bold text-info" id="percentage">0%</div>
+                                <div class="text-muted">Score</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="result-stat">
+                                <div class="display-4 fw-bold text-warning" id="duration">0:00</div>
+                                <div class="text-muted">Duration</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button class="btn btn-primary me-2" onclick="showDetailedResults()">
+                            <i class="fas fa-list me-2"></i>View Detailed Results
+                        </button>
+                        <button class="btn btn-success me-2" onclick="exportResults()">
+                            <i class="fas fa-download me-2"></i>Export Results
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="restartTest()">
+                            <i class="fas fa-redo me-2"></i>Take Test Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Results -->
+            <div class="card mt-4" id="detailed-results" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list-alt me-2"></i>
+                        Detailed Results
+                    </h5>
+                </div>
+                <div class="card-body" id="detailed-results-content">
+                    <!-- Detailed results will be populated here -->
+                </div>
+            </div>
+
+            <!-- Statistics Section -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Test Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Question Performance</h6>
+                            <div class="progress mb-2" style="height: 20px;" id="performance-progress">
+                                <!-- Progress bars will be populated by JavaScript -->
+                            </div>
+                            <small class="text-muted" id="performance-text">
+                                <!-- Performance text will be populated by JavaScript -->
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Points Breakdown</h6>
+                            <div class="progress mb-2" style="height: 20px;" id="points-progress">
+                                <!-- Points progress will be populated by JavaScript -->
+                            </div>
+                            <small class="text-muted" id="points-text">
+                                <!-- Points text will be populated by JavaScript -->
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sample questions data (all 15 questions from sample_questions.json)
+        const allQuestions = [
+            {
+                id: "q1",
+                question: "What is the capital of France?",
+                type: "multiple_choice",
+                options: ["London", "Berlin", "Paris", "Madrid"],
+                correct_answer: "Paris",
+                explanation: "Paris has been the capital of France since the 12th century.",
+                points: 1,
+                category: "Geography"
+            },
+            {
+                id: "q2",
+                question: "Python is a compiled language.",
+                type: "true_false",
+                correct_answer: "False",
+                explanation: "Python is an interpreted language, not a compiled one.",
+                points: 2,
+                category: "Programming"
+            },
+            {
+                id: "q3",
+                question: "The largest planet in our solar system is _____.",
+                type: "fill_blank",
+                correct_answer: "Jupiter",
+                explanation: "Jupiter is the largest planet in our solar system by both mass and volume.",
+                points: 1,
+                category: "Astronomy"
+            },
+            {
+                id: "q4",
+                question: "Explain the concept of recursion in programming.",
+                type: "short_answer",
+                correct_answer: "recursion",
+                explanation: "Recursion is a programming technique where a function calls itself to solve smaller instances of the same problem.",
+                points: 3,
+                category: "Programming"
+            },
+            {
+                id: "q5",
+                question: "Which of the following are valid Python data types?",
+                type: "multiple_choice",
+                options: ["int", "string", "list", "All of the above"],
+                correct_answer: "All of the above",
+                explanation: "Python supports int, string (str), list, and many other built-in data types.",
+                points: 2,
+                category: "Programming"
+            },
+            {
+                id: "q6",
+                question: "The speed of light in vacuum is approximately 300,000 km/s.",
+                type: "true_false",
+                correct_answer: "True",
+                explanation: "The speed of light in vacuum is exactly 299,792,458 m/s, which is approximately 300,000 km/s.",
+                points: 2,
+                category: "Physics"
+            },
+            {
+                id: "q7",
+                question: "What is 15 × 8?",
+                type: "multiple_choice",
+                options: ["100", "110", "120", "130"],
+                correct_answer: "120",
+                explanation: "15 × 8 = 120",
+                points: 1,
+                category: "Mathematics"
+            },
+            {
+                id: "q8",
+                question: "The Great Wall of China is visible from space with the naked eye.",
+                type: "true_false",
+                correct_answer: "False",
+                explanation: "This is a common myth. The Great Wall of China is not visible from space with the naked eye.",
+                points: 2,
+                category: "History"
+            },
+            {
+                id: "q9",
+                question: "Complete this famous quote: 'To be or not to be, that is the _____'",
+                type: "fill_blank",
+                correct_answer: "question",
+                explanation: "This is the famous opening line from Shakespeare's Hamlet.",
+                points: 2,
+                category: "Literature"
+            },
+            {
+                id: "q10",
+                question: "What does CPU stand for in computer science?",
+                type: "short_answer",
+                correct_answer: "central processing unit",
+                explanation: "CPU stands for Central Processing Unit, the brain of the computer.",
+                points: 2,
+                category: "Computer Science"
+            },
+            {
+                id: "q11",
+                question: "Which programming language is known for its use in web development?",
+                type: "multiple_choice",
+                options: ["C++", "JavaScript", "Assembly", "Fortran"],
+                correct_answer: "JavaScript",
+                explanation: "JavaScript is widely used for both frontend and backend web development.",
+                points: 1,
+                category: "Programming"
+            },
+            {
+                id: "q12",
+                question: "The human brain contains approximately 86 billion neurons.",
+                type: "true_false",
+                correct_answer: "True",
+                explanation: "Recent research estimates the human brain contains approximately 86 billion neurons.",
+                points: 2,
+                category: "Biology"
+            },
+            {
+                id: "q13",
+                question: "What is the chemical symbol for gold?",
+                type: "fill_blank",
+                correct_answer: "Au",
+                explanation: "The chemical symbol for gold is Au, derived from the Latin word 'aurum'.",
+                points: 1,
+                category: "Chemistry"
+            },
+            {
+                id: "q14",
+                question: "Describe the difference between HTTP and HTTPS.",
+                type: "short_answer",
+                correct_answer: "https",
+                explanation: "HTTPS is HTTP with SSL/TLS encryption, making it secure for transmitting sensitive data.",
+                points: 3,
+                category: "Computer Science"
+            },
+            {
+                id: "q15",
+                question: "Which planet is known as the 'Red Planet'?",
+                type: "multiple_choice",
+                options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                correct_answer: "Mars",
+                explanation: "Mars is known as the Red Planet due to the iron oxide on its surface giving it a reddish appearance.",
+                points: 1,
+                category: "Astronomy"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let testResults = [];
+        let testStartTime = null;
+        let currentAnswer = null;
+        let sampleQuestions = [];
+        let customQuestions = null; // Store custom loaded questions
+        let availableQuestions = allQuestions; // Default to sample questions
+
+        function loadCustomQuestions(input) {
+            const file = input.files[0];
+            if (!file) {
+                // Reset to sample questions
+                customQuestions = null;
+                availableQuestions = allQuestions;
+                updateCategoryFilter();
+                document.getElementById('file-info').style.display = 'none';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (!data.questions || !Array.isArray(data.questions)) {
+                        throw new Error('Invalid format: questions array not found');
+                    }
+
+                    // Validate each question (explanation is optional)
+                    const validQuestions = data.questions.filter(q => {
+                        return q.question && q.type && q.correct_answer !== undefined && q.points && q.category;
+                    }).map(q => {
+                        // Ensure explanation exists, if not add a default
+                        if (!q.explanation || q.explanation.trim() === '') {
+                            q.explanation = 'No explanation provided.';
+                        }
+                        return q;
+                    });
+
+                    if (validQuestions.length === 0) {
+                        throw new Error('No valid questions found in the file');
+                    }
+
+                    customQuestions = validQuestions;
+                    availableQuestions = validQuestions;
+                    
+                    // Show success message
+                    const fileInfo = document.getElementById('file-info');
+                    const fileInfoText = document.getElementById('file-info-text');
+                    fileInfoText.textContent = `Successfully loaded ${validQuestions.length} questions from "${file.name}"`;
+                    fileInfo.className = 'alert alert-success';
+                    fileInfo.style.display = 'block';
+
+                    // Show preview button
+                    document.getElementById('question-preview').style.display = 'block';
+
+                    // Update category filter with new categories
+                    updateCategoryFilter();
+                    
+                } catch (error) {
+                    // Show error message
+                    const fileInfo = document.getElementById('file-info');
+                    const fileInfoText = document.getElementById('file-info-text');
+                    fileInfoText.textContent = `Error loading file: ${error.message}`;
+                    fileInfo.className = 'alert alert-danger';
+                    fileInfo.style.display = 'block';
+                    
+                    // Reset to sample questions
+                    customQuestions = null;
+                    availableQuestions = allQuestions;
+                    updateCategoryFilter();
+                    document.getElementById('question-preview').style.display = 'none';
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        function toggleQuestionPreview() {
+            const previewContent = document.getElementById('preview-content');
+            const previewButton = event.target;
+            
+            if (previewContent.style.display === 'none') {
+                // Show preview
+                const tbody = document.getElementById('preview-table-body');
+                tbody.innerHTML = '';
+                
+                availableQuestions.forEach((question, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${question.question.length > 50 ? question.question.substring(0, 50) + '...' : question.question}</td>
+                        <td><span class="badge bg-secondary">${question.type.replace('_', ' ')}</span></td>
+                        <td><span class="badge bg-info">${question.category}</span></td>
+                        <td><span class="badge bg-success">${question.points}</span></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                previewContent.style.display = 'block';
+                previewButton.innerHTML = '<i class="fas fa-eye-slash me-1"></i>Hide Preview';
+            } else {
+                // Hide preview
+                previewContent.style.display = 'none';
+                previewButton.innerHTML = '<i class="fas fa-eye me-1"></i>Preview Questions';
+            }
+        }
+
+        function updateCategoryFilter() {
+            const categoryFilter = document.getElementById('category-filter');
+            const categories = [...new Set(availableQuestions.map(q => q.category))].sort();
+            
+            // Clear existing options except "All Categories"
+            categoryFilter.innerHTML = '<option value="all" selected>All Categories</option>';
+            
+            // Add category options
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        function startTest() {
+            document.getElementById('welcome-section').style.display = 'none';
+            document.getElementById('test-section').style.display = 'block';
+            document.getElementById('results-section').style.display = 'none';
+            
+            // Get configuration options
+            const questionCount = document.getElementById('question-count').value;
+            const questionOrder = document.getElementById('question-order').value;
+            const categoryFilter = document.getElementById('category-filter').value;
+            const difficultyFilter = document.getElementById('difficulty-filter').value;
+            
+            // Filter questions based on category and difficulty
+            let filteredQuestions = availableQuestions.filter(question => {
+                const categoryMatch = categoryFilter === 'all' || question.category === categoryFilter;
+                const difficultyMatch = difficultyFilter === 'all' || question.points.toString() === difficultyFilter;
+                return categoryMatch && difficultyMatch;
+            });
+            
+            if (filteredQuestions.length === 0) {
+                alert('No questions match your selected filters. Please adjust your selection.');
+                return;
+            }
+            
+            // Select questions based on count
+            if (questionCount === 'all') {
+                sampleQuestions = [...filteredQuestions];
+            } else {
+                const count = parseInt(questionCount);
+                if (questionOrder === 'random') {
+                    // Shuffle and take first N questions
+                    sampleQuestions = [...filteredQuestions].sort(() => Math.random() - 0.5).slice(0, count);
+                } else {
+                    // Take first N questions in order
+                    sampleQuestions = filteredQuestions.slice(0, count);
+                }
+            }
+            
+            // Apply randomization if selected (for question order, not selection)
+            if (questionOrder === 'random' && questionCount !== 'all') {
+                sampleQuestions = sampleQuestions.sort(() => Math.random() - 0.5);
+            }
+            
+            // Update the UI to show actual number of questions
+            if (sampleQuestions.length < parseInt(questionCount) && questionCount !== 'all') {
+                const actualCount = sampleQuestions.length;
+                document.getElementById('total-questions').textContent = actualCount;
+                document.getElementById('current-question').textContent = '1';
+                
+                // Show a notice about the actual question count
+                const notice = document.createElement('div');
+                notice.className = 'alert alert-info';
+                notice.innerHTML = `
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong> Only ${actualCount} questions available with your current filters. 
+                    Showing ${actualCount} questions instead of requested ${questionCount}.
+                `;
+                document.getElementById('test-section').insertBefore(notice, document.getElementById('test-section').firstChild);
+            }
+            
+            currentQuestionIndex = 0;
+            testResults = [];
+            testStartTime = new Date();
+            
+            // Show test configuration summary
+            const configSummary = document.createElement('div');
+            configSummary.className = 'alert alert-info mb-4';
+            configSummary.innerHTML = `
+                <h6><i class="fas fa-info-circle me-2"></i>Test Configuration:</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Questions:</strong> ${sampleQuestions.length} selected<br>
+                        <strong>Order:</strong> ${questionOrder === 'random' ? 'Randomized' : 'Sequential'}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Category:</strong> ${categoryFilter === 'all' ? 'All Categories' : categoryFilter}<br>
+                        <strong>Difficulty:</strong> ${difficultyFilter === 'all' ? 'All Levels' : difficultyFilter + ' points'}
+                    </div>
+                </div>
+            `;
+            
+            // Insert the summary before the progress bar
+            const testSection = document.getElementById('test-section');
+            testSection.insertBefore(configSummary, testSection.children[1]);
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = sampleQuestions[currentQuestionIndex];
+            const progress = ((currentQuestionIndex + 1) / sampleQuestions.length) * 100;
+            
+            // Update progress
+            document.getElementById('current-question').textContent = currentQuestionIndex + 1;
+            document.getElementById('total-questions').textContent = sampleQuestions.length;
+            document.getElementById('progress-percentage').textContent = Math.round(progress) + '% Complete';
+            document.getElementById('progress-bar').style.width = progress + '%';
+            
+            // Update question info
+            document.getElementById('question-number').textContent = currentQuestionIndex + 1;
+            document.getElementById('question-category').textContent = question.category;
+            document.getElementById('question-points').textContent = question.points + ' points';
+            document.getElementById('question-text').textContent = question.question;
+            
+            // Clear feedback
+            document.getElementById('answer-feedback').innerHTML = '';
+            
+            // Populate options
+            const optionsContainer = document.getElementById('question-options');
+            optionsContainer.innerHTML = '';
+            currentAnswer = null;
+            
+            if (question.type === 'multiple_choice') {
+                question.options.forEach((option, index) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'form-check mb-3';
+                    optionDiv.innerHTML = `
+                        <input class="form-check-input" type="radio" name="answer" 
+                               id="option${index + 1}" value="${index + 1}" onchange="setAnswer('${index + 1}')">
+                        <label class="form-check-label" for="option${index + 1}">
+                            ${option}
+                        </label>
+                    `;
+                    optionsContainer.appendChild(optionDiv);
+                });
+            } else if (question.type === 'true_false') {
+                const trueDiv = document.createElement('div');
+                trueDiv.className = 'form-check mb-3';
+                trueDiv.innerHTML = `
+                    <input class="form-check-input" type="radio" name="answer" 
+                           id="true" value="True" onchange="setAnswer('True')">
+                    <label class="form-check-label" for="true">
+                        <i class="fas fa-check text-success me-2"></i>True
+                    </label>
+                `;
+                
+                const falseDiv = document.createElement('div');
+                falseDiv.className = 'form-check mb-3';
+                falseDiv.innerHTML = `
+                    <input class="form-check-input" type="radio" name="answer" 
+                           id="false" value="False" onchange="setAnswer('False')">
+                    <label class="form-check-label" for="false">
+                        <i class="fas fa-times text-danger me-2"></i>False
+                    </label>
+                `;
+                
+                optionsContainer.appendChild(trueDiv);
+                optionsContainer.appendChild(falseDiv);
+            } else if (question.type === 'fill_blank') {
+                const inputDiv = document.createElement('div');
+                inputDiv.className = 'mb-3';
+                inputDiv.innerHTML = `
+                    <label for="answer" class="form-label">Your Answer:</label>
+                    <input type="text" class="form-control form-control-lg" 
+                           id="answer" name="answer" 
+                           placeholder="Enter the missing word or phrase" 
+                           oninput="setAnswer(this.value)">
+                `;
+                optionsContainer.appendChild(inputDiv);
+            } else if (question.type === 'short_answer') {
+                const textareaDiv = document.createElement('div');
+                textareaDiv.className = 'mb-3';
+                textareaDiv.innerHTML = `
+                    <label for="answer" class="form-label">Your Answer:</label>
+                    <textarea class="form-control" id="answer" name="answer" 
+                              rows="3" placeholder="Enter your answer" 
+                              oninput="setAnswer(this.value)"></textarea>
+                `;
+                optionsContainer.appendChild(textareaDiv);
+            }
+            
+            document.getElementById('submit-btn').disabled = true;
+        }
+
+        function setAnswer(answer) {
+            currentAnswer = answer;
+            document.getElementById('submit-btn').disabled = false;
+        }
+
+        function submitAnswer() {
+            if (currentAnswer === null) {
+                alert('Please select an answer before submitting.');
+                return;
+            }
+            
+            const question = sampleQuestions[currentQuestionIndex];
+            let isCorrect = false;
+            
+            if (question.type === 'multiple_choice') {
+                const selectedIndex = parseInt(currentAnswer) - 1;
+                isCorrect = question.options[selectedIndex] === question.correct_answer;
+            } else if (question.type === 'true_false') {
+                isCorrect = currentAnswer === question.correct_answer;
+            } else if (question.type === 'fill_blank') {
+                isCorrect = currentAnswer.toLowerCase().trim() === question.correct_answer.toLowerCase().trim();
+            } else if (question.type === 'short_answer') {
+                // For short answers, check if the user's answer contains the correct answer
+                const userAnswer = currentAnswer.toLowerCase().trim();
+                const correctAnswer = question.correct_answer.toLowerCase().trim();
+                isCorrect = userAnswer.includes(correctAnswer) || correctAnswer.includes(userAnswer);
+            }
+            
+            const points = isCorrect ? question.points : 0;
+            
+            testResults.push({
+                question: question.question,
+                userAnswer: currentAnswer,
+                correctAnswer: question.correct_answer,
+                isCorrect: isCorrect,
+                pointsEarned: points,
+                maxPoints: question.points,
+                explanation: question.explanation
+            });
+            
+            // Show feedback
+            const feedbackDiv = document.getElementById('answer-feedback');
+            const feedbackClass = isCorrect ? 'alert-success' : 'alert-danger';
+            const feedbackIcon = isCorrect ? 'fas fa-check-circle' : 'fas fa-times-circle';
+            
+            // Handle missing explanations
+            let explanation = question.explanation;
+            if (!explanation || explanation.trim() === '') {
+                if (isCorrect) {
+                    explanation = 'Great job! Your answer is correct.';
+                } else {
+                    explanation = 'The correct answer is: ' + question.correct_answer;
+                }
+            }
+            
+            feedbackDiv.innerHTML = `
+                <div class="alert ${feedbackClass}">
+                    <i class="${feedbackIcon} me-2"></i>
+                    <strong>${isCorrect ? 'CORRECT!' : 'INCORRECT!'}</strong>
+                    ${explanation}
+                </div>
+            `;
+            
+            document.getElementById('submit-btn').disabled = true;
+            
+            // Move to next question after a short delay
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < sampleQuestions.length) {
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }, 2000);
+        }
+
+        function skipQuestion() {
+            if (confirm('Are you sure you want to skip this question? You will receive 0 points for this question.')) {
+                const question = sampleQuestions[currentQuestionIndex];
+                
+                // Add to results as skipped
+                testResults.push({
+                    question: question.question,
+                    userAnswer: '[SKIPPED]',
+                    correctAnswer: question.correct_answer,
+                    isCorrect: false,
+                    pointsEarned: 0,
+                    maxPoints: question.points,
+                    explanation: question.explanation || 'Question was skipped.'
+                });
+                
+                // Show feedback for skipped question
+                const feedbackDiv = document.getElementById('answer-feedback');
+                feedbackDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-forward me-2"></i>
+                        <strong>QUESTION SKIPPED</strong>
+                        You skipped this question and received 0 points. The correct answer was: ${question.correct_answer}
+                    </div>
+                `;
+                
+                // Disable submit button
+                document.getElementById('submit-btn').disabled = true;
+                
+                // Move to next question after a short delay
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < sampleQuestions.length) {
+                        showQuestion();
+                    } else {
+                        showResults();
+                    }
+                }, 2000);
+            }
+        }
+
+        function showResults() {
+            document.getElementById('test-section').style.display = 'none';
+            document.getElementById('results-section').style.display = 'block';
+            
+            const totalPoints = testResults.reduce((sum, result) => sum + result.pointsEarned, 0);
+            const maxPoints = testResults.reduce((sum, result) => sum + result.maxPoints, 0);
+            const percentage = Math.round((totalPoints / maxPoints) * 100);
+            const duration = Math.round((new Date() - testStartTime) / 1000);
+            
+            // Check if test was ended early
+            const wasEndedEarly = currentQuestionIndex < sampleQuestions.length;
+            const resultsHeader = document.querySelector('#results-section .card-header h3');
+            
+            if (wasEndedEarly) {
+                resultsHeader.innerHTML = `
+                    <i class="fas fa-stop-circle me-2"></i>
+                    Test Ended Early!
+                `;
+                resultsHeader.className = 'mb-0';
+                
+                // Add a notice about early termination
+                const notice = document.createElement('div');
+                notice.className = 'alert alert-warning mt-3';
+                notice.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Note:</strong> This test was ended early. 
+                    ${sampleQuestions.length - currentQuestionIndex} questions were automatically marked as skipped.
+                `;
+                document.querySelector('#results-section .card-body').insertBefore(notice, document.querySelector('#results-section .card-body').firstChild);
+            } else {
+                resultsHeader.innerHTML = `
+                    <i class="fas fa-trophy me-2"></i>
+                    Test Completed!
+                `;
+            }
+            
+            // Calculate statistics
+            const correctCount = testResults.filter(r => r.isCorrect).length;
+            const skippedCount = testResults.filter(r => r.userAnswer === '[SKIPPED]').length;
+            const incorrectCount = testResults.filter(r => !r.isCorrect && r.userAnswer !== '[SKIPPED]').length;
+            const totalCount = testResults.length;
+            
+            document.getElementById('final-score').textContent = totalPoints;
+            document.getElementById('max-score').textContent = maxPoints;
+            document.getElementById('percentage').textContent = percentage + '%';
+            document.getElementById('duration').textContent = Math.floor(duration / 60) + ':' + (duration % 60).toString().padStart(2, '0');
+            
+            // Update performance statistics
+            const correctPercent = Math.round((correctCount / totalCount) * 100);
+            const skippedPercent = Math.round((skippedCount / totalCount) * 100);
+            const incorrectPercent = Math.round((incorrectCount / totalCount) * 100);
+            
+            document.getElementById('performance-progress').innerHTML = `
+                <div class="progress-bar bg-success" style="width: ${correctPercent}%">
+                    Correct: ${correctCount}
+                </div>
+                <div class="progress-bar bg-warning" style="width: ${skippedPercent}%">
+                    Skipped: ${skippedCount}
+                </div>
+                <div class="progress-bar bg-danger" style="width: ${incorrectPercent}%">
+                    Incorrect: ${incorrectCount}
+                </div>
+            `;
+            
+            document.getElementById('performance-text').textContent = 
+                `${correctCount} correct, ${skippedCount} skipped, ${incorrectCount} incorrect`;
+            
+            // Update points breakdown
+            const pointsPercent = Math.round((totalPoints / maxPoints) * 100);
+            document.getElementById('points-progress').innerHTML = `
+                <div class="progress-bar bg-primary" style="width: ${pointsPercent}%">
+                    Earned: ${totalPoints}
+                </div>
+            `;
+            
+            document.getElementById('points-text').textContent = 
+                `${totalPoints} of ${maxPoints} total points earned (${percentage}%)`;
+        }
+
+        function showDetailedResults() {
+            const detailedDiv = document.getElementById('detailed-results');
+            const contentDiv = document.getElementById('detailed-results-content');
+            
+            if (detailedDiv.style.display === 'none') {
+                let html = '<div class="accordion" id="resultsAccordion">';
+                
+                testResults.forEach((result, index) => {
+                    const isCorrect = result.isCorrect;
+                    const isSkipped = result.userAnswer === '[SKIPPED]';
+                    
+                    let iconClass, badgeClass;
+                    if (isSkipped) {
+                        iconClass = 'fas fa-forward text-warning';
+                        badgeClass = 'warning';
+                    } else if (isCorrect) {
+                        iconClass = 'fas fa-check-circle text-success';
+                        badgeClass = 'success';
+                    } else {
+                        iconClass = 'fas fa-times-circle text-danger';
+                        badgeClass = 'danger';
+                    }
+                    
+                    html += `
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading${index}">
+                                <button class="accordion-button ${!isCorrect && !isSkipped ? 'collapsed' : ''}" 
+                                        type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse${index}" 
+                                        aria-expanded="${isCorrect || isSkipped}">
+                                    <div class="d-flex align-items-center w-100">
+                                        <div class="me-3">
+                                            <i class="${iconClass} fa-lg"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <strong>Question ${index + 1}:</strong>
+                                            ${result.question}
+                                        </div>
+                                        <div class="ms-3">
+                                            <span class="badge bg-${badgeClass}">
+                                                ${result.pointsEarned}/${result.maxPoints} pts
+                                            </span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse${index}" 
+                                 class="accordion-collapse collapse ${isCorrect || isSkipped ? 'show' : ''}" 
+                                 data-bs-parent="#resultsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6><i class="fas fa-user me-2"></i>Your Answer:</h6>
+                                            <p class="text-${isSkipped ? 'warning' : (isCorrect ? 'success' : 'danger')}">
+                                                ${result.userAnswer || 'No answer provided'}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6><i class="fas fa-check me-2"></i>Correct Answer:</h6>
+                                            <p class="text-success">${result.correctAnswer}</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <h6><i class="fas fa-lightbulb me-2"></i>Explanation:</h6>
+                                        <p class="text-muted">${result.explanation}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                contentDiv.innerHTML = html;
+                detailedDiv.style.display = 'block';
+                
+                event.target.innerHTML = '<i class="fas fa-eye-slash me-2"></i>Hide Detailed Results';
+            } else {
+                detailedDiv.style.display = 'none';
+                event.target.innerHTML = '<i class="fas fa-list me-2"></i>View Detailed Results';
+            }
+        }
+
+        function exportResults() {
+            const totalPoints = testResults.reduce((sum, result) => sum + result.pointsEarned, 0);
+            const maxPoints = testResults.reduce((sum, result) => sum + result.maxPoints, 0);
+            const percentage = Math.round((totalPoints / maxPoints) * 100);
+            
+            const exportData = {
+                testTitle: "Simple Web Test",
+                totalPoints: totalPoints,
+                maxPoints: maxPoints,
+                percentage: percentage,
+                timestamp: new Date().toISOString(),
+                results: testResults
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'test_results_' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.json';
+            link.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        function restartTest() {
+            document.getElementById('welcome-section').style.display = 'block';
+            document.getElementById('test-section').style.display = 'none';
+            document.getElementById('results-section').style.display = 'none';
+        }
+
+        // Initialize category filter on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCategoryFilter();
+        });
+
+        // Exit and End Test functions
+        function confirmExit() {
+            const modal = new bootstrap.Modal(document.getElementById('exitModal'));
+            modal.show();
+        }
+
+        function exitTest() {
+            window.location.href = "#"; // Go back to home section
+            restartTest();
+        }
+
+        function confirmEndTest() {
+            // Update the modal with current progress
+            const answeredCount = testResults.length;
+            const totalCount = sampleQuestions.length;
+            
+            document.getElementById('answered-count').textContent = answeredCount;
+            document.getElementById('total-count').textContent = totalCount;
+            
+            const modal = new bootstrap.Modal(document.getElementById('endTestModal'));
+            modal.show();
+        }
+
+        function endTestEarly() {
+            // Mark all remaining questions as skipped
+            const remainingQuestions = sampleQuestions.slice(currentQuestionIndex);
+            
+            remainingQuestions.forEach(question => {
+                testResults.push({
+                    question: question.question,
+                    userAnswer: '[SKIPPED]',
+                    correctAnswer: question.correct_answer,
+                    isCorrect: false,
+                    pointsEarned: 0,
+                    maxPoints: question.points,
+                    explanation: question.explanation || 'Question was skipped when test ended early.'
+                });
+            });
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('endTestModal'));
+            modal.hide();
+            
+            // Show results
+            showResults();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && document.getElementById('test-section').style.display !== 'none') {
+                e.preventDefault();
+                const submitBtn = document.getElementById('submit-btn');
+                if (!submitBtn.disabled) {
+                    submitAnswer();
+                }
+            }
+            
+            // Escape key to show exit modal
+            if (e.key === 'Escape') {
+                if (document.getElementById('test-section').style.display !== 'none') {
+                    confirmExit();
+                }
+            }
+            
+            // Ctrl+E to end test early
+            if (e.ctrlKey && e.key === 'e' && document.getElementById('test-section').style.display !== 'none') {
+                e.preventDefault();
+                confirmEndTest();
+            }
+        });
+    </script>
+</body>
+</html>

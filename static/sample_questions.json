@@ -1,0 +1,172 @@
+{
+  "title": "Sample Test Questions",
+  "description": "A collection of sample questions demonstrating different question types",
+  "version": "1.0",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "What is the capital of France?",
+      "type": "multiple_choice",
+      "options": [
+        "London",
+        "Berlin",
+        "Paris",
+        "Madrid"
+      ],
+      "correct_answer": "Paris",
+      "explanation": "Paris has been the capital of France since the 12th century.",
+      "points": 1,
+      "category": "Geography"
+    },
+    {
+      "id": "q2",
+      "question": "Python is a compiled language.",
+      "type": "true_false",
+      "correct_answer": "False",
+      "explanation": "Python is an interpreted language, not a compiled one.",
+      "points": 2,
+      "category": "Programming"
+    },
+    {
+      "id": "q3",
+      "question": "The largest planet in our solar system is _____.",
+      "type": "fill_blank",
+      "correct_answer": "Jupiter",
+      "explanation": "Jupiter is the largest planet in our solar system by both mass and volume.",
+      "points": 1,
+      "category": "Astronomy"
+    },
+    {
+      "id": "q4",
+      "question": "Explain the concept of recursion in programming.",
+      "type": "short_answer",
+      "correct_answer": "recursion",
+      "explanation": "Recursion is a programming technique where a function calls itself to solve smaller instances of the same problem.",
+      "points": 3,
+      "category": "Programming"
+    },
+    {
+      "id": "q5",
+      "question": "Which of the following are valid Python data types?",
+      "type": "multiple_choice",
+      "options": [
+        "int",
+        "string",
+        "list",
+        "All of the above"
+      ],
+      "correct_answer": "All of the above",
+      "explanation": "Python supports int, string (str), list, and many other built-in data types.",
+      "points": 2,
+      "category": "Programming"
+    },
+    {
+      "id": "q6",
+      "question": "The speed of light in vacuum is approximately 300,000 km/s.",
+      "type": "true_false",
+      "correct_answer": "True",
+      "explanation": "The speed of light in vacuum is exactly 299,792,458 m/s, which is approximately 300,000 km/s.",
+      "points": 2,
+      "category": "Physics"
+    },
+    {
+      "id": "q7",
+      "question": "What is 15 × 8?",
+      "type": "multiple_choice",
+      "options": [
+        "100",
+        "110",
+        "120",
+        "130"
+      ],
+      "correct_answer": "120",
+      "explanation": "15 × 8 = 120",
+      "points": 1,
+      "category": "Mathematics"
+    },
+    {
+      "id": "q8",
+      "question": "The Great Wall of China is visible from space with the naked eye.",
+      "type": "true_false",
+      "correct_answer": "False",
+      "explanation": "This is a common myth. The Great Wall of China is not visible from space with the naked eye.",
+      "points": 2,
+      "category": "History"
+    },
+    {
+      "id": "q9",
+      "question": "Complete this famous quote: 'To be or not to be, that is the _____'",
+      "type": "fill_blank",
+      "correct_answer": "question",
+      "explanation": "This is the famous opening line from Shakespeare's Hamlet.",
+      "points": 2,
+      "category": "Literature"
+    },
+    {
+      "id": "q10",
+      "question": "What does CPU stand for in computer science?",
+      "type": "short_answer",
+      "correct_answer": "central processing unit",
+      "explanation": "CPU stands for Central Processing Unit, the brain of the computer.",
+      "points": 2,
+      "category": "Computer Science"
+    },
+    {
+      "id": "q11",
+      "question": "Which programming language is known for its use in web development?",
+      "type": "multiple_choice",
+      "options": [
+        "C++",
+        "JavaScript",
+        "Assembly",
+        "Fortran"
+      ],
+      "correct_answer": "JavaScript",
+      "explanation": "JavaScript is widely used for both frontend and backend web development.",
+      "points": 1,
+      "category": "Programming"
+    },
+    {
+      "id": "q12",
+      "question": "The human brain contains approximately 86 billion neurons.",
+      "type": "true_false",
+      "correct_answer": "True",
+      "explanation": "Recent research estimates the human brain contains approximately 86 billion neurons.",
+      "points": 2,
+      "category": "Biology"
+    },
+    {
+      "id": "q13",
+      "question": "What is the chemical symbol for gold?",
+      "type": "fill_blank",
+      "correct_answer": "Au",
+      "explanation": "The chemical symbol for gold is Au, derived from the Latin word 'aurum'.",
+      "points": 1,
+      "category": "Chemistry"
+    },
+    {
+      "id": "q14",
+      "question": "Describe the difference between HTTP and HTTPS.",
+      "type": "short_answer",
+      "correct_answer": "https",
+      "explanation": "HTTPS is HTTP with SSL/TLS encryption, making it secure for transmitting sensitive data.",
+      "points": 3,
+      "category": "Computer Science"
+    },
+    {
+      "id": "q15",
+      "question": "Which planet is known as the 'Red Planet'?",
+      "type": "multiple_choice",
+      "options": [
+        "Venus",
+        "Mars",
+        "Jupiter",
+        "Saturn"
+      ],
+      "correct_answer": "Mars",
+      "explanation": "Mars is known as the Red Planet due to the iron oxide on its surface giving it a reddish appearance.",
+      "points": 1,
+      "category": "Astronomy"
+    }
+  ]
+}

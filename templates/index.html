@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Interactive Testing Application{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-primary">
+                <i class="fas fa-graduation-cap me-3"></i>
+                Interactive Testing Application
+            </h1>
+            <p class="lead text-muted">
+                Create, load, and take interactive tests with multiple question types
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3">
+                            <i class="fas fa-upload fa-2x"></i>
+                        </div>
+                        <h5 class="card-title">Load Questions</h5>
+                        <p class="card-text">
+                            Upload a JSON file containing your test questions and start taking tests immediately.
+                        </p>
+                        <a href="{{ url_for('load_questions') }}" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Load Questions
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3">
+                            <i class="fas fa-play fa-2x"></i>
+                        </div>
+                        <h5 class="card-title">Sample Test</h5>
+                        <p class="card-text">
+                            Try our sample test with 15 questions covering various topics like programming, science, and more.
+                        </p>
+                        <button class="btn btn-success" onclick="loadSampleTest()">
+                            <i class="fas fa-play me-2"></i>Start Sample Test
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="text-center mb-4">Features</h3>
+                <div class="row g-3">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="feature-box text-center p-3">
+                            <i class="fas fa-list-ul fa-2x text-primary mb-2"></i>
+                            <h6>Multiple Choice</h6>
+                            <small class="text-muted">Select from multiple options</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="feature-box text-center p-3">
+                            <i class="fas fa-toggle-on fa-2x text-success mb-2"></i>
+                            <h6>True/False</h6>
+                            <small class="text-muted">Simple binary questions</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="feature-box text-center p-3">
+                            <i class="fas fa-edit fa-2x text-warning mb-2"></i>
+                            <h6>Fill in the Blank</h6>
+                            <small class="text-muted">Complete missing words</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="feature-box text-center p-3">
+                            <i class="fas fa-keyboard fa-2x text-info mb-2"></i>
+                            <h6>Short Answer</h6>
+                            <small class="text-muted">Type your answer</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-info-circle me-2"></i>How to Use
+                        </h5>
+                        <ol class="mb-0">
+                            <li><strong>Load Questions:</strong> Upload a JSON file with your test questions</li>
+                            <li><strong>Review Summary:</strong> Check the question summary and statistics</li>
+                            <li><strong>Start Test:</strong> Begin taking the test with optional randomization</li>
+                            <li><strong>View Results:</strong> See your score and detailed feedback</li>
+                            <li><strong>Export Results:</strong> Save your results for later review</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function loadSampleTest() {
+    // Create a form to submit the sample questions file
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("load_questions") }}';
+    form.enctype = 'multipart/form-data';
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.name = 'file';
+    input.accept = '.json';
+    
+    // Create a temporary file input and trigger file selection
+    input.style.display = 'none';
+    document.body.appendChild(input);
+    input.click();
+    
+    input.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            form.appendChild(this);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,10 @@
+# Web Application Dependencies
+Flask>=2.0.0
+Werkzeug>=2.0.0
+
+# Optional dependencies for enhanced features:
+# colorama>=0.4.4  # For colored terminal output
+# tabulate>=0.9.0  # For formatted tables
+# pyyaml>=6.0      # For YAML question file support
+# gunicorn>=20.0.0 # For production deployment
+# python-dotenv>=0.19.0 # For environment variables

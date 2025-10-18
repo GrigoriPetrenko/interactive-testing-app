@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Question Summary - Interactive Testing Application{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Question Summary: {{ test_title }}
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if test_description %}
+                <p class="text-muted">{{ test_description }}</p>
+                {% endif %}
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card bg-primary text-white text-center p-3 rounded">
+                            <h3 class="mb-0">{{ questions|length }}</h3>
+                            <small>Total Questions</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card bg-success text-white text-center p-3 rounded">
+                            <h3 class="mb-0">{{ total_points }}</h3>
+                            <small>Total Points</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card bg-info text-white text-center p-3 rounded">
+                            <h3 class="mb-0">{{ categories|length }}</h3>
+                            <small>Categories</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card bg-warning text-white text-center p-3 rounded">
+                            <h3 class="mb-0">
+                                {{ (total_points / questions|length)|round(1) if questions|length > 0 else 0 }}
+                            </h3>
+                            <small>Avg Points</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-tags me-2"></i>Categories</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Questions</th>
+                                        <th>Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category, info in categories.items() %}
+                                    <tr>
+                                        <td>{{ category }}</td>
+                                        <td>{{ info.count }}</td>
+                                        <td>{{ info.points }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-question-circle me-2"></i>Question Types</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set type_counts = {} %}
+                                    {% for q in questions %}
+                                        {% set type_counts = type_counts.update({q.type: type_counts.get(q.type, 0) + 1}) or type_counts %}
+                                    {% endfor %}
+                                    {% for type, count in type_counts.items() %}
+                                    <tr>
+                                        <td>{{ type.replace('_', ' ').title() }}</td>
+                                        <td>{{ count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h5><i class="fas fa-play me-2"></i>Start Test</h5>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('start_test') }}" class="btn btn-success">
+                            <i class="fas fa-play me-2"></i>
+                            Start Test (In Order)
+                        </a>
+                        <a href="{{ url_for('start_test', randomize='true') }}" class="btn btn-warning">
+                            <i class="fas fa-random me-2"></i>
+                            Start Test (Randomized)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Question Preview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for question in questions[:6] %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-left">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    {{ question.question[:50] }}{% if question.question|length > 50 %}...{% endif %}
+                                </h6>
+                                <small class="text-muted">
+                                    <span class="badge bg-secondary">{{ question.category }}</span>
+                                    <span class="badge bg-primary">{{ question.type.replace('_', ' ').title() }}</span>
+                                    <span class="badge bg-success">{{ question.points }} pts</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if questions|length > 6 %}
+                <div class="text-center">
+                    <small class="text-muted">Showing first 6 questions of {{ questions|length }} total</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
