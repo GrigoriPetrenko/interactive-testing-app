@@ -55,7 +55,17 @@ class Question:
                 choice_index = int(user_answer) - 1
                 if 0 <= choice_index < len(self.options):
                     selected = self.options[choice_index]
-                    return selected == self.correct_answer, self.points if selected == self.correct_answer else 0
+                    
+                    # Handle different correct answer formats:
+                    # 1. If correct_answer is just a letter (A, B, C, D), extract it from the selected option
+                    # 2. If correct_answer is the full option text, compare directly
+                    if len(self.correct_answer) == 1 and self.correct_answer.isalpha():
+                        # Extract the letter from the selected option (e.g., "C. Choice [sys_choice]" -> "C")
+                        selected_letter = selected.split('.')[0].strip() if '.' in selected else selected[0]
+                        return selected_letter == self.correct_answer, self.points if selected_letter == self.correct_answer else 0
+                    else:
+                        # Compare full option text
+                        return selected == self.correct_answer, self.points if selected == self.correct_answer else 0
             except ValueError:
                 return False, 0
         

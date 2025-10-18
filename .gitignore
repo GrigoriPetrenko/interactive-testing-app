@@ -33,6 +33,7 @@ instance/
 # Uploaded files or results
 media/
 staticfiles/
+uploads/
 
 # OS files
 .DS_Store

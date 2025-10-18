@@ -168,12 +168,34 @@ def submit_answer():
     question = Question(question_data)
     is_correct, points = question.check_answer(user_answer)
     
+    # Get the correct answer text for display
+    correct_answer_display = question.correct_answer
+    if question.type == 'multiple_choice' and len(question.correct_answer) == 1 and question.correct_answer.isalpha():
+        # If correct answer is just a letter, find the corresponding option text
+        try:
+            letter_index = ord(question.correct_answer.upper()) - ord('A')
+            if 0 <= letter_index < len(question.options):
+                correct_answer_display = question.options[letter_index]
+        except:
+            pass  # Keep original if conversion fails
+    
+    # Get the user answer text for display
+    user_answer_display = user_answer
+    if question.type == 'multiple_choice' and user_answer.isdigit():
+        # Convert user's numeric choice to option text
+        try:
+            choice_index = int(user_answer) - 1
+            if 0 <= choice_index < len(question.options):
+                user_answer_display = question.options[choice_index]
+        except:
+            pass  # Keep original if conversion fails
+    
     # Store result
     result = {
         'question_id': question.id,
         'question': question.question,
-        'user_answer': user_answer,
-        'correct_answer': question.correct_answer,
+        'user_answer': user_answer_display,
+        'correct_answer': correct_answer_display,
         'is_correct': is_correct,
         'points_earned': points,
         'max_points': question.points,
