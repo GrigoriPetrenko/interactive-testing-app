@@ -162,7 +162,17 @@ def submit_answer():
         return redirect(url_for('test_complete'))
     
     question_data = questions[current_index]
-    user_answer = request.form.get('answer', '').strip()
+    
+    # Handle multiple answers for checkbox questions
+    if question_data.get('correct_answer') and (isinstance(question_data['correct_answer'], list) or (isinstance(question_data['correct_answer'], str) and ',' in question_data['correct_answer'])):
+        # Multiple correct answers - get all selected checkboxes
+        user_answers = request.form.getlist('answer')
+        user_answer = ','.join(sorted(user_answers)) if user_answers else ''
+        print(f"DEBUG: Multiple answer question - Raw answers: {user_answers}, Processed: '{user_answer}'")
+    else:
+        # Single correct answer - get radio button value
+        user_answer = request.form.get('answer', '').strip()
+        print(f"DEBUG: Single answer question - Answer: '{user_answer}'")
     
     # Create Question object for checking
     question = Question(question_data)
@@ -170,25 +180,52 @@ def submit_answer():
     
     # Get the correct answer text for display
     correct_answer_display = question.correct_answer
-    if question.type == 'multiple_choice' and len(question.correct_answer) == 1 and question.correct_answer.isalpha():
-        # If correct answer is just a letter, find the corresponding option text
-        try:
-            letter_index = ord(question.correct_answer.upper()) - ord('A')
-            if 0 <= letter_index < len(question.options):
-                correct_answer_display = question.options[letter_index]
-        except:
-            pass  # Keep original if conversion fails
+    if question.type == 'multiple_choice':
+        if isinstance(question.correct_answer, list):
+            # Multiple correct answers - show as list of option texts
+            try:
+                correct_indices = [ord(letter.upper()) - ord('A') for letter in question.correct_answer]
+                correct_options = [question.options[i] for i in correct_indices if 0 <= i < len(question.options)]
+                correct_answer_display = correct_options
+            except:
+                pass
+        elif len(question.correct_answer) == 1 and question.correct_answer.isalpha():
+            # Single letter answer - find the corresponding option text
+            try:
+                letter_index = ord(question.correct_answer.upper()) - ord('A')
+                if 0 <= letter_index < len(question.options):
+                    correct_answer_display = question.options[letter_index]
+            except:
+                pass
+        elif ',' in question.correct_answer:
+            # Multiple correct answers in string format - convert to option texts
+            try:
+                correct_letters = [letter.strip().upper() for letter in question.correct_answer.split(',')]
+                correct_indices = [ord(letter) - ord('A') for letter in correct_letters]
+                correct_options = [question.options[i] for i in correct_indices if 0 <= i < len(question.options)]
+                correct_answer_display = correct_options
+            except:
+                pass
     
     # Get the user answer text for display
     user_answer_display = user_answer
-    if question.type == 'multiple_choice' and user_answer.isdigit():
-        # Convert user's numeric choice to option text
-        try:
-            choice_index = int(user_answer) - 1
-            if 0 <= choice_index < len(question.options):
-                user_answer_display = question.options[choice_index]
-        except:
-            pass  # Keep original if conversion fails
+    if question.type == 'multiple_choice':
+        if isinstance(question.correct_answer, list) or (isinstance(question.correct_answer, str) and ',' in question.correct_answer):
+            # Multiple answers - convert to option texts
+            try:
+                user_choices = [int(x) for x in user_answer.split(',') if x.strip()]
+                user_options = [question.options[choice - 1] for choice in user_choices if 0 < choice <= len(question.options)]
+                user_answer_display = user_options
+            except:
+                pass
+        elif user_answer.isdigit():
+            # Single numeric choice - convert to option text
+            try:
+                choice_index = int(user_answer) - 1
+                if 0 <= choice_index < len(question.options):
+                    user_answer_display = question.options[choice_index]
+            except:
+                pass
     
     # Store result
     result = {

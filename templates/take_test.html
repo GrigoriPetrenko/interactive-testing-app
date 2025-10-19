@@ -45,8 +45,15 @@
                         <div class="options-container">
                             {% for option in question.options %}
                             <div class="form-check mb-3">
-                                <input class="form-check-input" type="radio" name="answer" 
-                                       id="option{{ loop.index }}" value="{{ loop.index }}">
+                                {% if (question.correct_answer is iterable and question.correct_answer is not string) or (question.correct_answer is string and ',' in question.correct_answer) %}
+                                    <!-- Multiple correct answers - use checkboxes -->
+                                    <input class="form-check-input" type="checkbox" name="answer" 
+                                           id="option{{ loop.index }}" value="{{ loop.index }}">
+                                {% else %}
+                                    <!-- Single correct answer - use radio buttons -->
+                                    <input class="form-check-input" type="radio" name="answer" 
+                                           id="option{{ loop.index }}" value="{{ loop.index }}">
+                                {% endif %}
                                 <label class="form-check-label" for="option{{ loop.index }}">
                                     {{ option }}
                                 </label>
@@ -157,9 +164,27 @@ function exitTest() {
 
 // Auto-focus on first input
 document.addEventListener('DOMContentLoaded', function() {
-    const firstInput = document.querySelector('input[type="radio"], input[type="text"], textarea');
+    const firstInput = document.querySelector('input[type="radio"], input[type="checkbox"], input[type="text"], textarea');
     if (firstInput) {
         firstInput.focus();
+    }
+    
+    // Debug: Log form data on submit
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const formData = new FormData(form);
+            const answers = formData.getAll('answer');
+            console.log('DEBUG: Form submitted with answers:', answers);
+            
+            // For multiple answer questions, ensure at least one checkbox is selected
+            const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+            if (checkboxes.length > 0 && answers.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one answer before submitting.');
+                return false;
+            }
+        });
     }
 });
 

@@ -136,13 +136,25 @@
                                     <div class="col-md-6">
                                         <h6><i class="fas fa-user me-2"></i>Your Answer:</h6>
                                         <p class="answer-text {% if result.is_correct %}text-success{% else %}text-danger{% endif %}">
-                                            {{ result.user_answer or 'No answer provided' }}
+                                            {% if result.user_answer is iterable and result.user_answer is not string %}
+                                                {% for answer in result.user_answer %}
+                                                    <span class="badge bg-{% if result.is_correct %}success{% else %}danger{% endif %} me-1">{{ answer }}</span>
+                                                {% endfor %}
+                                            {% else %}
+                                                {{ result.user_answer or 'No answer provided' }}
+                                            {% endif %}
                                         </p>
                                     </div>
                                     <div class="col-md-6">
                                         <h6><i class="fas fa-check me-2"></i>Correct Answer:</h6>
                                         <p class="answer-text text-success">
-                                            {{ result.correct_answer }}
+                                            {% if result.correct_answer is iterable and result.correct_answer is not string %}
+                                                {% for answer in result.correct_answer %}
+                                                    <span class="badge bg-success me-1">{{ answer }}</span>
+                                                {% endfor %}
+                                            {% else %}
+                                                {{ result.correct_answer }}
+                                            {% endif %}
                                         </p>
                                     </div>
                                 </div>

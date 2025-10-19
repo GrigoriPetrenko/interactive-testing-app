@@ -51,23 +51,58 @@ class Question:
     def check_answer(self, user_answer: str) -> Tuple[bool, float]:
         """Check if the user's answer is correct and return score."""
         if self.type == 'multiple_choice':
-            try:
-                choice_index = int(user_answer) - 1
-                if 0 <= choice_index < len(self.options):
-                    selected = self.options[choice_index]
+            # Handle multiple correct answers (list format)
+            if isinstance(self.correct_answer, list):
+                # Convert user's comma-separated answer to list of letters
+                try:
+                    user_choices = [int(x) for x in user_answer.split(',') if x.strip()]
+                    user_letters = [chr(ord('A') + choice - 1) for choice in user_choices if 0 < choice <= len(self.options)]
+                    correct_letters = [ans.upper() for ans in self.correct_answer]
                     
-                    # Handle different correct answer formats:
-                    # 1. If correct_answer is just a letter (A, B, C, D), extract it from the selected option
-                    # 2. If correct_answer is the full option text, compare directly
-                    if len(self.correct_answer) == 1 and self.correct_answer.isalpha():
-                        # Extract the letter from the selected option (e.g., "C. Choice [sys_choice]" -> "C")
-                        selected_letter = selected.split('.')[0].strip() if '.' in selected else selected[0]
-                        return selected_letter == self.correct_answer, self.points if selected_letter == self.correct_answer else 0
-                    else:
-                        # Compare full option text
-                        return selected == self.correct_answer, self.points if selected == self.correct_answer else 0
-            except ValueError:
-                return False, 0
+                    # Check if user's answers match exactly (order doesn't matter)
+                    user_letters_sorted = sorted(user_letters)
+                    correct_letters_sorted = sorted(correct_letters)
+                    
+                    is_correct = user_letters_sorted == correct_letters_sorted
+                    return is_correct, self.points if is_correct else 0
+                except (ValueError, IndexError):
+                    return False, 0
+            
+            # Handle string format correct answers (comma-separated or single)
+            elif isinstance(self.correct_answer, str) and ',' in self.correct_answer:
+                # Multiple correct answers in string format (e.g., "B, C, E")
+                try:
+                    correct_letters = [letter.strip().upper() for letter in self.correct_answer.split(',')]
+                    user_choices = [int(x) for x in user_answer.split(',') if x.strip()]
+                    user_letters = [chr(ord('A') + choice - 1) for choice in user_choices if 0 < choice <= len(self.options)]
+                    
+                    user_letters_sorted = sorted(user_letters)
+                    correct_letters_sorted = sorted(correct_letters)
+                    
+                    is_correct = user_letters_sorted == correct_letters_sorted
+                    return is_correct, self.points if is_correct else 0
+                except (ValueError, IndexError):
+                    return False, 0
+            
+            # Handle single correct answer
+            else:
+                try:
+                    choice_index = int(user_answer) - 1
+                    if 0 <= choice_index < len(self.options):
+                        selected = self.options[choice_index]
+                        
+                        # Handle different correct answer formats:
+                        # 1. If correct_answer is just a letter (A, B, C, D), convert choice index to letter
+                        # 2. If correct_answer is the full option text, compare directly
+                        if len(self.correct_answer) == 1 and self.correct_answer.isalpha():
+                            # Convert the choice index to the corresponding letter (0->A, 1->B, 2->C, 3->D)
+                            selected_letter = chr(ord('A') + choice_index)
+                            return selected_letter == self.correct_answer.upper(), self.points if selected_letter == self.correct_answer.upper() else 0
+                        else:
+                            # Compare full option text
+                            return selected == self.correct_answer, self.points if selected == self.correct_answer else 0
+                except ValueError:
+                    return False, 0
         
         elif self.type == 'true_false':
             answer_bool = user_answer.lower().strip() in ['true', 't', '1', 'yes', 'y']
