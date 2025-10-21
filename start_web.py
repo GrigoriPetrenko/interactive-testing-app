@@ -18,20 +18,20 @@ def open_browser():
 def main():
     """Main startup function."""
     print("=" * 60)
-    print("🌐 INTERACTIVE TESTING APPLICATION - WEB VERSION")
+    print("INTERACTIVE TESTING APPLICATION - WEB VERSION")
     print("=" * 60)
     print()
     print("Starting web server...")
-    print("📱 Web interface will be available at: http://localhost:5000")
-    print("📁 Sample questions file: sample_questions.json")
+    print("Web interface will be available at: http://localhost:5000")
+    print("Sample questions file: sample_questions.json")
     print()
     print("Features:")
-    print("  ✅ Modern web interface")
-    print("  ✅ Multiple question types")
-    print("  ✅ Interactive testing")
-    print("  ✅ Real-time feedback")
-    print("  ✅ Results export")
-    print("  ✅ Responsive design")
+    print("  - Modern web interface")
+    print("  - Multiple question types")
+    print("  - Interactive testing")
+    print("  - Real-time feedback")
+    print("  - Results export")
+    print("  - Responsive design")
     print()
     print("Press Ctrl+C to stop the server")
     print("=" * 60)
@@ -51,10 +51,10 @@ def main():
             use_reloader=False  # Disable reloader to prevent double startup
         )
     except KeyboardInterrupt:
-        print("\n\n🛑 Server stopped by user")
+        print("\n\nServer stopped by user")
         print("Thank you for using the Interactive Testing Application!")
     except Exception as e:
-        print(f"\n❌ Error starting server: {e}")
+        print(f"\nError starting server: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":

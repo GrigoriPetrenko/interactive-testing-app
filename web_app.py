@@ -7,6 +7,7 @@ Flask web interface for the testing application.
 import json
 import random
 import os
+import uuid
 from datetime import datetime
 from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
 from werkzeug.utils import secure_filename
@@ -19,15 +20,49 @@ app.secret_key = 'your-secret-key-change-this-in-production'
 
 # Configuration
 UPLOAD_FOLDER = 'uploads'
+SESSION_FOLDER = 'sessions'
 ALLOWED_EXTENSIONS = {'json'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Ensure upload folder exists
+# Ensure folders exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(SESSION_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     """Check if file has allowed extension."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def get_session_id():
+    """Get or create a session ID."""
+    if 'session_id' not in session:
+        session['session_id'] = str(uuid.uuid4())
+    return session['session_id']
+
+def save_session_data(key, data):
+    """Save large session data to file."""
+    session_id = get_session_id()
+    session_file = os.path.join(SESSION_FOLDER, f"{session_id}_{key}.json")
+    with open(session_file, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+def load_session_data(key, default=None):
+    """Load session data from file."""
+    session_id = get_session_id()
+    session_file = os.path.join(SESSION_FOLDER, f"{session_id}_{key}.json")
+    if os.path.exists(session_file):
+        try:
+            with open(session_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            pass
+    return default
+
+def clear_session_data():
+    """Clear all session data files."""
+    session_id = get_session_id()
+    for filename in os.listdir(SESSION_FOLDER):
+        if filename.startswith(session_id):
+            os.remove(os.path.join(SESSION_FOLDER, filename))
 
 @app.route('/')
 def index():
@@ -58,7 +93,7 @@ def load_questions():
                     data = json.load(f)
                 
                 questions = [Question(q) for q in data.get('questions', [])]
-                session['questions'] = [
+                questions_data = [
                     {
                         'id': q.id,
                         'question': q.question,
@@ -71,8 +106,17 @@ def load_questions():
                     } for q in questions
                 ]
                 
-                session['test_title'] = data.get('title', 'Untitled Test')
-                session['test_description'] = data.get('description', '')
+                # Save large data to files instead of session
+                save_session_data('questions', questions_data)
+                save_session_data('test_title', data.get('title', 'Untitled Test'))
+                save_session_data('test_description', data.get('description', ''))
+                
+                # Clear any existing test session data
+                session.pop('test_questions', None)
+                session.pop('current_question', None)
+                session.pop('test_results', None)
+                session.pop('test_start_time', None)
+                session.pop('randomized', None)
                 
                 flash(f'Successfully loaded {len(questions)} questions!')
                 return redirect(url_for('question_summary'))
@@ -86,7 +130,7 @@ def load_questions():
 @app.route('/question_summary')
 def question_summary():
     """Show question summary."""
-    questions = session.get('questions', [])
+    questions = load_session_data('questions', [])
     if not questions:
         flash('No questions loaded. Please load a questions file first.')
         return redirect(url_for('load_questions'))
@@ -107,12 +151,12 @@ def question_summary():
                          questions=questions,
                          categories=categories,
                          total_points=total_points,
-                         test_title=session.get('test_title', 'Untitled Test'))
+                         test_title=load_session_data('test_title', 'Untitled Test'))
 
 @app.route('/start_test')
 def start_test():
     """Start a new test session."""
-    questions = session.get('questions', [])
+    questions = load_session_data('questions', [])
     if not questions:
         flash('No questions loaded. Please load a questions file first.')
         return redirect(url_for('load_questions'))
@@ -124,7 +168,7 @@ def start_test():
         questions = random.sample(questions, len(questions))
     
     # Initialize test session
-    session['test_questions'] = questions
+    save_session_data('test_questions', questions)
     session['current_question'] = 0
     session['test_results'] = []
     session['test_start_time'] = datetime.now().isoformat()
@@ -135,7 +179,7 @@ def start_test():
 @app.route('/take_test')
 def take_test():
     """Display current question for testing."""
-    questions = session.get('test_questions', [])
+    questions = load_session_data('test_questions', [])
     current_index = session.get('current_question', 0)
     
     if not questions or current_index >= len(questions):
@@ -154,7 +198,7 @@ def take_test():
 @app.route('/submit_answer', methods=['POST'])
 def submit_answer():
     """Submit an answer and move to next question."""
-    questions = session.get('test_questions', [])
+    questions = load_session_data('test_questions', [])
     current_index = session.get('current_question', 0)
     results = session.get('test_results', [])
     
@@ -334,6 +378,43 @@ def api_questions():
 def api_results():
     """API endpoint to get current test results."""
     return jsonify(session.get('test_results', []))
+
+@app.route('/clear_session')
+def clear_session():
+    """Clear test session data but keep loaded questions."""
+    # Clear only test-related session data, keep the loaded questions
+    session.pop('current_question', None)
+    session.pop('test_results', None)
+    session.pop('test_start_time', None)
+    session.pop('randomized', None)
+    # Clear test_questions from file storage
+    session_id = get_session_id()
+    test_questions_file = os.path.join(SESSION_FOLDER, f"{session_id}_test_questions.json")
+    if os.path.exists(test_questions_file):
+        os.remove(test_questions_file)
+    flash('Test session cleared successfully! Questions remain loaded.')
+    return redirect(url_for('question_summary'))
+
+@app.route('/clear_all')
+def clear_all():
+    """Clear all session data and return to home page."""
+    clear_session_data()
+    session.clear()
+    flash('All session data cleared successfully!')
+    return redirect(url_for('index'))
+
+@app.route('/debug_session')
+def debug_session():
+    """Debug route to check session data."""
+    questions = load_session_data('questions', [])
+    test_questions = load_session_data('test_questions', [])
+    return jsonify({
+        'questions_count': len(questions),
+        'test_questions_count': len(test_questions),
+        'session_keys': list(session.keys()),
+        'has_questions': len(questions) > 0,
+        'session_id': get_session_id()
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

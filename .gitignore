@@ -34,6 +34,7 @@ instance/
 media/
 staticfiles/
 uploads/
+sessions/
 
 # OS files
 .DS_Store
