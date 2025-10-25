@@ -1,19 +1,31 @@
-/* Custom styles for the Interactive Testing Application */
+/* Custom styles for the Interactive Testing Application - VS Code Dark Theme */
 
 :root {
-    --primary-color: #0d6efd;
-    --success-color: #198754;
-    --warning-color: #ffc107;
-    --danger-color: #dc3545;
-    --info-color: #0dcaf0;
-    --light-color: #f8f9fa;
-    --dark-color: #212529;
+    /* VS Code Dark Theme Colors */
+    --primary-color: #007acc;        /* VS Code blue */
+    --success-color: #4ec9b0;        /* VS Code teal */
+    --warning-color: #dcdcaa;        /* VS Code yellow */
+    --danger-color: #f44747;         /* VS Code red */
+    --info-color: #4fc1ff;           /* VS Code light blue */
+    --light-color: #2d2d30;          /* VS Code dark gray */
+    --dark-color: #1e1e1e;          /* VS Code background */
+    
+    /* Additional VS Code colors */
+    --bg-primary: #1e1e1e;          /* Main background */
+    --bg-secondary: #252526;         /* Secondary background */
+    --bg-tertiary: #2d2d30;          /* Tertiary background */
+    --text-primary: #cccccc;         /* Primary text */
+    --text-secondary: #969696;       /* Secondary text */
+    --border-color: #3e3e42;         /* Border color */
+    --accent-color: #007acc;         /* Accent blue */
+    --accent-hover: #1177bb;         /* Accent hover */
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     line-height: 1.6;
-    background-color: #f8f9fa;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 /* Feature icons */
@@ -49,14 +61,14 @@ body {
 .question-text {
     font-size: 1.2rem;
     line-height: 1.6;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .options-container {
-    background-color: #f8f9fa;
+    background-color: var(--bg-secondary);
     border-radius: 10px;
     padding: 20px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color);
 }
 
 .form-check {
@@ -66,7 +78,7 @@ body {
 }
 
 .form-check:hover {
-    background-color: rgba(13, 110, 253, 0.1);
+    background-color: rgba(0, 122, 204, 0.1);
 }
 
 .form-check-input:checked + .form-check-label {
@@ -86,19 +98,24 @@ body {
 
 /* Card enhancements */
 .card {
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--bg-secondary);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     transition: box-shadow 0.2s ease-in-out;
+    color: var(--text-primary);
 }
 
 .card:hover {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    border-color: var(--accent-color);
 }
 
 .card-header {
-    border-radius: 15px 15px 0 0 !important;
+    border-radius: 8px 8px 0 0 !important;
     border: none;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 /* Button enhancements */
@@ -122,28 +139,32 @@ body {
 .result-stat {
     padding: 20px;
     border-radius: 10px;
-    background-color: white;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    background-color: var(--bg-secondary);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     transition: transform 0.2s ease-in-out;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
 }
 
 .result-stat:hover {
     transform: translateY(-3px);
+    border-color: var(--accent-color);
 }
 
 .answer-text {
-    font-family: 'Courier New', monospace;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     font-size: 1.1rem;
     padding: 10px;
     border-radius: 5px;
-    background-color: #f8f9fa;
+    background-color: var(--bg-tertiary);
     border-left: 4px solid currentColor;
+    color: var(--text-primary);
 }
 
 .explanation-text {
     font-style: italic;
-    color: #6c757d;
-    background-color: #f8f9fa;
+    color: var(--text-secondary);
+    background-color: var(--bg-tertiary);
     padding: 15px;
     border-radius: 8px;
     border-left: 4px solid var(--info-color);
@@ -151,19 +172,23 @@ body {
 
 /* Accordion enhancements */
 .accordion-item {
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     margin-bottom: 10px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
 }
 
 .accordion-button {
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     font-weight: 500;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: none;
 }
 
 .accordion-button:not(.collapsed) {
-    background-color: rgba(13, 110, 253, 0.1);
-    color: var(--primary-color);
+    background-color: rgba(0, 122, 204, 0.2);
+    color: var(--accent-color);
 }
 
 /* Badge enhancements */
@@ -183,35 +208,61 @@ body {
 /* Form enhancements */
 .form-control, .form-select {
     border-radius: 8px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
     transition: border-color 0.2s ease-in-out;
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 122, 204, 0.25);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 /* Table enhancements */
 .table {
-    border-radius: 10px;
+    border-radius: 8px;
     overflow: hidden;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 .table thead th {
-    background-color: var(--light-color);
+    background-color: var(--bg-tertiary);
     border: none;
     font-weight: 600;
+    color: var(--text-primary);
+}
+
+.table tbody tr {
+    border-color: var(--border-color);
+}
+
+.table tbody tr:hover {
+    background-color: var(--bg-tertiary);
 }
 
 /* Navigation enhancements */
 .navbar {
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    background-color: var(--bg-secondary) !important;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .navbar-brand {
     font-weight: 600;
     font-size: 1.3rem;
+    color: var(--text-primary) !important;
+}
+
+.navbar-nav .nav-link {
+    color: var(--text-primary) !important;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--accent-color) !important;
 }
 
 /* Footer */
@@ -286,22 +337,71 @@ footer {
     to { transform: rotate(360deg); }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - VS Code style */
 ::-webkit-scrollbar {
     width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
+    background: var(--bg-primary);
+    border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 10px;
+    background: var(--border-color);
+    border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
+    background: var(--accent-color);
+}
+
+/* Additional VS Code styling */
+.container-fluid {
+    background-color: var(--bg-primary);
+}
+
+.jumbotron, .bg-light {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary);
+}
+
+.text-muted {
+    color: var(--text-secondary) !important;
+}
+
+.border {
+    border-color: var(--border-color) !important;
+}
+
+/* Bootstrap overrides for dark theme */
+.bg-white {
+    background-color: var(--bg-secondary) !important;
+}
+
+.text-dark {
+    color: var(--text-primary) !important;
+}
+
+.bg-light {
+    background-color: var(--bg-tertiary) !important;
+}
+
+/* Question text styling for results */
+.question-preview {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--text-primary);
+}
+
+.question-text-full {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--accent-color);
+    margin-bottom: 0;
 }
 

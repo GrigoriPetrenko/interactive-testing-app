@@ -118,6 +118,15 @@ def load_questions():
                 session.pop('test_start_time', None)
                 session.pop('randomized', None)
                 
+                # Clear file-based storage for test data
+                session_id = get_session_id()
+                test_questions_file = os.path.join(SESSION_FOLDER, f"{session_id}_test_questions.json")
+                test_results_file = os.path.join(SESSION_FOLDER, f"{session_id}_test_results.json")
+                if os.path.exists(test_questions_file):
+                    os.remove(test_questions_file)
+                if os.path.exists(test_results_file):
+                    os.remove(test_results_file)
+                
                 flash(f'Successfully loaded {len(questions)} questions!')
                 return redirect(url_for('question_summary'))
             
@@ -200,7 +209,7 @@ def submit_answer():
     """Submit an answer and move to next question."""
     questions = load_session_data('test_questions', [])
     current_index = session.get('current_question', 0)
-    results = session.get('test_results', [])
+    results = load_session_data('test_results', [])
     
     if current_index >= len(questions):
         return redirect(url_for('test_complete'))
@@ -284,7 +293,8 @@ def submit_answer():
     }
     
     results.append(result)
-    session['test_results'] = results
+    # Use file-based storage for test results to avoid cookie size limits
+    save_session_data('test_results', results)
     session['current_question'] = current_index + 1
     
     return redirect(url_for('take_test'))
@@ -292,7 +302,7 @@ def submit_answer():
 @app.route('/test_complete')
 def test_complete():
     """Show test completion and results."""
-    results = session.get('test_results', [])
+    results = load_session_data('test_results', [])
     start_time = session.get('test_start_time')
     
     if not results:
@@ -377,7 +387,7 @@ def api_questions():
 @app.route('/api/results')
 def api_results():
     """API endpoint to get current test results."""
-    return jsonify(session.get('test_results', []))
+    return jsonify(load_session_data('test_results', []))
 
 @app.route('/clear_session')
 def clear_session():
@@ -387,11 +397,14 @@ def clear_session():
     session.pop('test_results', None)
     session.pop('test_start_time', None)
     session.pop('randomized', None)
-    # Clear test_questions from file storage
+    # Clear test_questions and test_results from file storage
     session_id = get_session_id()
     test_questions_file = os.path.join(SESSION_FOLDER, f"{session_id}_test_questions.json")
+    test_results_file = os.path.join(SESSION_FOLDER, f"{session_id}_test_results.json")
     if os.path.exists(test_questions_file):
         os.remove(test_questions_file)
+    if os.path.exists(test_results_file):
+        os.remove(test_results_file)
     flash('Test session cleared successfully! Questions remain loaded.')
     return redirect(url_for('question_summary'))
 
@@ -415,6 +428,25 @@ def debug_session():
         'has_questions': len(questions) > 0,
         'session_id': get_session_id()
     })
+
+@app.route('/reset_test')
+def reset_test():
+    """Reset the current test to start from question 1."""
+    session['current_question'] = 0
+    # Clear existing results
+    save_session_data('test_results', [])
+    flash('Test reset to question 1. Previous answers cleared.')
+    return redirect(url_for('take_test'))
+
+@app.route('/clear_cache')
+def clear_cache():
+    """Clear all cached data and return to home."""
+    # Clear all session data
+    session.clear()
+    # Clear all file-based storage
+    clear_session_data()
+    flash('All cached data cleared successfully!')
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
